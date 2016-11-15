@@ -19,6 +19,7 @@ node版web上传 、 java版web上传
 * 进入node-upload目录
 * 使用npm i 安装依赖(当然已经配置了cnpm，也可以使用cnpm)
 * 执行命令npm start启动服务(将会启动两个服务：web服务，websocket服务)
+* 打开浏览器访问静态文件127.0.0.1:8083/index.html
 
 ### java版web上传
 
