@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html>
+<head lang="zh-CN">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1.0,user-scalable=no,maximum-scale=1,width=device-width">
+    <title>ajax上传</title>
+    <link rel="stylesheet" href="../bootstrap.min.css"/>
+    <link rel="stylesheet" href="../style.css"/>
+    <script src="../js/jquery.js"></script>
+    <script type="text/javascript" src="../js/protobuf.min.js"></script>
+
+</head>
+<body>
+
+<div class="panel panel-info">
+    <div class="panel-heading">websocket上传文件</div>
+    <div class="panel-body " id="jsPanel1">
+        <div class="form-group">
+            <a href="javascript:;" class="btn btn-default chooseFile">选择文件
+                <input type="file" name="inputFile" multiple="multiple"  class="form-control" placeholder="chooseFile" id="inputFile" style="width:195px;display:inline-block;"/></a>
+            <button  id="submit_btn" type="submit" class="btn btn-primary mgl-30" >Upload</button>
+        </div>
+        <ul class="list-group choosedFiles js-list" id="choosedFiles">
+        </ul>
+        <ul class="list-group look js-list" id="look">
+        </ul>
+        <div id="shwoPWA"></div>
+    </div>
+</div>
+
+
+<script>
+    var uploaded = 0;
+    var chunkSize = 1024 * 1024;
+    var connection;
+    var Page = function(){
+        this.filesArr = [];
+        this.inputFile = document.getElementById('inputFile');
+        this.choosedFiles = document.getElementById('choosedFiles');
+        this.submit_btn = document.getElementById('submit_btn');
+
+        this.inputFile2 = document.getElementById('inputFile2');
+        this.choosedFiles2 = document.getElementById('choosedFiles2');
+        this.submit_btn2 = document.getElementById('submit_btn2');
+    }
+
+    Page.prototype = {
+        init : function(){
+            this.bindEvent();
+        },
+        bindEvent : function(){
+            var _this = this;
+            this.inputFile.addEventListener('change',function(){
+                _this.handlers.inputFileChanage.call(_this,_this.choosedFiles,this.files,true);
+            });
+
+            this.submit_btn.addEventListener('click',function(){
+                for(var i = 0 ; i < _this.filesArr.length; i++){
+                    var _file = _this.filesArr[i];
+                    _file.id = (new Date()).getTime();
+                    _this.sendFileByWS(_file);
+                }
+            });
+            this.initWS();
+
+        },
+        handlers : {
+            'inputFileChanage' : function(choosedFiles,files,hasProgress){
+                var _this = this;
+                _this.filesArr = [];
+                var progress = '<div class="progress">'+
+                                  '<div class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;">'+
+                                    '<span class="sr-only">0% 完成</span>'+
+                                  '</div>'+
+                                '</div>';
+                if(!hasProgress){
+                    progress = '';
+                }
+                var lis = '<li class="list-group-item list-group-item-success">已选择的文件:</li>';
+                for(var i = 0 ; i < files.length ; i++){
+                    var f =  files[i];
+                    f.uid = (new Date()).getTime()+''+f.lastModified;
+                    _this.filesArr.push(f);
+                    lis += '<li class="list-group-item" id="'+f.uid+'">'+f.name+progress+'</li>';
+                }
+                console.log(_this.filesArr[0]);
+                choosedFiles.innerHTML = lis;
+            }
+        },
+        initWS : function(){
+           var url = "ws://localhost:8081/upload";
+           connection = new WebSocket(url);
+
+            connection.binaryType = 'arraybuffer';
+            connection.onopen = function () {
+                window.console.log('websocket connection success ...');
+            };
+
+            connection.onerror = function (error) {
+              window.console.log('WebSocket Error ' + error);
+            };
+
+            connection.onmessage = function (e) {
+                window.console.log(e);
+            };
+
+            connection.onclose = function (e) {
+                window.console.log(' websocket close : ');
+                window.console.log(e);
+            }
+
+            this.connection = connection;
+        },
+        sendFileByWS : function(file){
+            var rf = new FileReader();
+            var _this = this;
+            var result = this.next(file,rf);
+            rf.onloadend = function(){
+                var upload = new Upload();
+                upload.filename = file.name;
+                upload.currchunk = file.currchunk;
+                upload.chunks = file.chunks;
+                upload.upload_file =rf.result;
+                upload.uid = file.id || parseInt(file.lastModified);
+                connection.send(upload.toArrayBuffer());
+                if(file.currchunk < file.chunks){
+                    _this.sendFileByWS(file);
+                    var per = Math.ceil(( ((file.currchunk*chunkSize) + chunkSize) /file.size )*100);
+                    $('#'+file.uid+' .progress-bar').css('width',per+'%');
+                }else{
+                    $('#'+file.uid+' .progress-bar').css('width','100%');
+                    
+                }
+            } 
+        },
+        next : function(file,rf){
+            
+            file.chunks = parseInt(file.size / chunkSize) ;
+            file.currchunk = typeof(file.currchunk) == 'undefined' ? 0 : file.currchunk +1;
+            console.log('currchunk',file.currchunk);
+            var _blob = file.slice(file.currchunk * chunkSize , (file.currchunk*chunkSize) + chunkSize);
+            var result = rf.readAsArrayBuffer(_blob);
+            file._blob = _blob;
+            return result;
+        }
+    }
+        var builder = protobuf.loadProtoFile( "/proto/upload.proto");
+        var Upload = builder.build("Upload");
+
+    var page = new Page();
+    page.init();
+</script>
+</body>
+</html>

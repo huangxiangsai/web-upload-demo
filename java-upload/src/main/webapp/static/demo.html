@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+</head>
+<body>
+
+<form action="">
+    <label >上传文件方法1：普通上传</label>
+    <input type="file" id="upload"/>
+    <br/>
+    <span id="progressUpload"></span>
+</form>
+
+<br/>
+<br/><br/>
+
+<form action="">
+    <label >上传文件方法2：客户端分片上传</label>
+    <input type="file" id="upload2"/>
+    <br/>
+    <span id="progressUpload2"></span>
+</form>
+<br/>
+
+<div>
+    <label >上传文件方法3：Content-Range</label>
+    <input type="file" id="upload3"/>
+</div>
+<div class="demo">
+    command + shift + J
+</div>
+
+<script src="/static/jquery.js"></script>
+<script src="/static/main.js"></script>
+<script type="text/javascript">
+
+    var demo = document.getElementById('demo');
+
+    var upload = document.getElementById('upload');
+    upload.addEventListener('change',function(){
+        for(var i = 0 ; i < this.files.length ; i++){
+            uploadFn(this.files[i]);
+        }
+    });
+
+    var progressUpload = document.getElementById('upload2');
+    progressUpload.addEventListener('change',function(){
+        for(var i = 0 ; i < this.files.length ; i++){
+            uploadFn(this.files[i]);
+        }
+
+    });
+
+    var currchunk = 1;
+    var _chunks;
+    var file;
+    var cuteAPI;
+    var chunkSize = 2 * 1024 * 1024;
+
+    function uploadFn(_file){
+        file = _file || file;
+        cuteAPI = CuteFile(file,chunkSize);
+        send();
+    }
+
+
+    function CuteFile(file, chunkSize) {
+        var pending = [],
+            blob = file,
+            total = blob.size,
+            chunks = chunkSize ? Math.ceil(total / chunkSize) : 1,
+            start = 0,
+            index = 0,
+            len, api;
+
+        _chunks = chunks;
+
+        api = {
+            file: file,
+
+            has: function() {
+                return !!pending.length;
+            },
+
+            shift: function() {
+                return pending.shift();
+            },
+
+            unshift: function(block) {
+                pending.unshift(block);
+            }
+        };
+
+        while (index < chunks) {
+            len = Math.min(chunkSize, total - start);
+
+            pending.push({
+                file: file,
+                start: start,
+                end: chunkSize ? (start + len) : total,
+                total: total,
+                chunks: chunks,
+                chunk: index++,
+                cuted: api
+            });
+            start += len;
+        }
+
+        file.blocks = pending.concat();
+        file.remaning = pending.length;
+
+        return api;
+    }
+
+    function send(){
+        if(!cuteAPI.has() ){
+            return false;
+        }
+        var block = cuteAPI.shift();
+        var file = block.file;
+        var f = file.slice(block.start, block.end);
+
+        var chunks = block.chunks;
+        var currchunk = block.chunk;
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST','/partupload',true);
+        var fd = new FormData();
+        xhr.upload.onprogress = function(data){
+         console.log(data);
+        }
+        xhr.onreadystatechange = function() {
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                console.log(new Date());
+              // Every thing ok, file uploaded
+              console.log(xhr.responseText); // handle response.
+                var res = JSON.parse(xhr.responseText);
+                if(res.code ==200){
+                    send();
+                }
+            }
+        };
+
+
+         fd.append("upload_file", f);
+         fd.append("filename",file.name);
+         fd.append('chunks',chunks);
+         fd.append('currchunk',currchunk);
+         console.log("send:");
+         console.log(new Date());
+         xhr.send(fd);
+    }
+
+
+</script>
+
+<script>
+    var upload3 = document.getElementById('upload3');
+    upload3.addEventListener('change',function(){
+        for(var i = 0 ; i < this.files.length ; i++){
+            uploadFn3(this.files[i]);
+        }
+    });
+
+    function uploadFn3(file){
+
+
+    }
+
+</script>
+
+</body>
+</html>

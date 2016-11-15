@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html>
+<head lang="zh-CN">
+    <meta charset="UTF-8">
+    <title>ajax上传</title>
+    <link rel="stylesheet" href="./bootstrap.min.css"/>
+    <link rel="stylesheet" href="./index.css"/>
+</head>
+<body>
+
+<div class="panel panel-primary">
+    <div class="panel-heading">已上传的所有文件</div>
+    <div class="panel-body">
+        <div class="list-group">
+
+        </div>
+    </div>
+</div>
+    <script type="text/javascript" src="./jquery.js"></script>
+    <script>
+
+        // $.ajax({
+        //     url : 'http://localhost:8888/fileList',
+        //     type : 'get',
+        //     contentType:'multipart/form-data; boundary=----WebKitFormBoundaryEYB8KkYvlrOFQBq8',
+        //     data : {data : '1111'},
+        //     headers : {'Accept':'application/*'},
+        //     dataType : 'json',
+        //     success : function(res){
+        //         if(res.code == 200){
+        //             var data = res.data , i = 0,aEl='';
+        //             for(i ; i < data.length ;i++){
+        //                 var d = data[i];
+        //                 aEl += '<a href="'+d.filePath+'" target="_blank" class="list-group-item">'+d.fileName+'</a>';
+        //             }
+        //             console.log(aEl);
+        //             $('.list-group').append(aEl);
+        //         }
+        //     }
+        // });
+
+        
+        
+        var xhr = new XMLHttpRequest();
+　　    
+        
+        xhr.open('GET', 'http://127.0.0.1:8888/static/tempFiles/684.mp3');
+　　     xhr.responseType = 'blob';
+        xhr.send();
+        xhr.onreadystatechange = function() {
+            console.log(xhr.readyState);
+            if (xhr.readyState == 4 && xhr.status == 200) {
+                
+                　　var blob = new Blob([xhr.response], {type: 'audio/mp3',filename:'684.mp3'});
+                fileUpload(blob);
+            }
+        };
+
+        function fileUpload(blob){
+            var formData = new FormData();
+            var fileBody = '<p>hey!<p>';
+            // var blob = new Blob([fileBody], { type: 'text/xml',name:'blob.html'});
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST','http://localhost:8888/upload',true)
+
+            formData.append('upload_file',blob);
+            formData.append('filename','684.mp3');
+            xhr.upload.onprogress = function(data){
+                console.log(data);
+                
+            }
+            xhr.send(formData);
+            // $.ajax({
+            //     url : 'http://localhost:8888/upload',
+            //     type : 'post',
+            //     data : formData,
+            //     processData: false,
+            //     contentType: false,
+            //     headers : {'Accept':'*/*'},
+            //     dataType : 'json',
+            //     success : function(res){
+            //         console.log(res);
+            //     }
+            // });
+        }
+
+        
+
+
+    </script>
+
+</body>
+</html>

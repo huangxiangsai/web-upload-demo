@@ -1,0 +1,7 @@
+message Upload {
+    required string filename = 1;
+    required int32 currchunk = 2;
+    required int32 chunks = 3;
+    required int32 uid = 4;
+    required bytes upload_file = 5;
+}

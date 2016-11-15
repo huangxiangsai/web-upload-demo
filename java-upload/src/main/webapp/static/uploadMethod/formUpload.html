@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head lang="zh-CN">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1.0,user-scalable=no,maximum-scale=1,width=device-width">
+    <title>表单上传</title>
+    <link rel="stylesheet" href="../bootstrap.min.css"/>
+    <link rel="stylesheet" href="../index.css"/>
+</head>
+<body>
+
+
+<div class="panel panel-warning">
+    <div class="panel-heading">普通表单上传文件</div>
+    <div class="panel-body">
+        
+        <form method="POST" action="/formUpload" class="navbar-form navbar-left" enctype="multipart/form-data">
+            <div class="form-group">
+                <a href="javascript:;" class="btn btn-default chooseFile">选择文件
+                    <input type="file" multiple="true" name="inputFile"   id="inputFile" 
+                        style="width:195px;display:inline-block;"/>
+                </a>
+                <button  id="submit_btn" type="submit" class="btn btn-primary mgl-30">Upload</button>
+            </div>
+            <ul class="list-group choosedFiles" id="choosedFiles">
+            </ul>
+        </form>
+        
+    </div>
+</div>
+
+<script>
+
+    var filesArr = [];
+    var upload = document.getElementById('inputFile');
+    upload.addEventListener('change',function(){
+        var lis = '<li class="list-group-item list-group-item-success">已选择的文件:</li>';
+        for(var i = 0 ; i < this.files.length ; i++){
+            var f =  this.files[i];
+            filesArr.push(f);
+            lis += '<li class="list-group-item">'+f.name+'</li>';
+        }
+
+        var choosedFiles = document.getElementById('choosedFiles');
+        choosedFiles.innerHTML = lis;
+    });
+</script>
+</body>
+</html>

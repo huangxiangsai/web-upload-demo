@@ -1,0 +1,26 @@
+{
+  "name": "node-upload-demo",
+  "version": "1.0.0",
+  "description": "web uplaod file demo for node",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js & node ws_server.js"
+  },
+  "keywords": [
+    "upload",
+    "ajax"
+  ],
+  "author": "SAI",
+  "license": "ISC",
+  "devDependencies": {
+    "koa-better-body": "^3.0.2",
+    "content-type-mime": "^1.0.1",
+    "formidable": "^1.0.17",
+    "json-stable-stringify": "^1.0.1",
+    "koa": "^1.2.4",
+    "koa-router": "^5.4.0",
+    "koa-static": "^2.0.0",
+    "protobufjs": "^5.0.1",
+    "ws": "^1.1.1"
+  }
+}

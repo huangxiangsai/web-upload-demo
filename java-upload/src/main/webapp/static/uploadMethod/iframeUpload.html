@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html>
+<head lang="zh-CN">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="initial-scale=1.0,user-scalable=no,maximum-scale=1,width=device-width">
+    <title></title>
+    <link rel="stylesheet" href="../bootstrap.min.css"/>
+    <link rel="stylesheet" href="../index.css"/>
+</head>
+<body>
+
+
+    <div class="panel panel-info">
+        <div class="panel-heading">iframe表单异步上传文件</div>
+        <div class="panel-body">
+            <form method="POST" action="/iframeUpload" id="my_form" class="navbar-form navbar-left" enctype="multipart/form-data" role="search">
+                <div class="form-group">
+                    <a href="javascript:;" class="btn btn-default chooseFile">选择文件
+                        <input type="file" name="inputFile"  class="form-control" placeholder="chooseFile" id="inputFile" style="width:195px;display:inline-block;"/></a>
+
+                    <button  id="submit_btn" type="submit" class="btn btn-primary mgl-30" onclick="mySubmit();">Upload</button>
+                </div>
+                <ul class="list-group choosedFiles" id="choosedFiles">
+                </ul>
+            </form>
+            <a  id="look"  role="button"></a>
+
+        </div>
+    </div>
+
+    <!-- iframe跨域测试 -->
+    <!--<div class="panel panel-info">
+        <div class="panel-heading">iframe表单异步上传文件</div>
+        <div class="panel-body">
+            <form method="POST" action="http://b.local.com:8888/iframeUpload" id="my_form" class="navbar-form navbar-left" enctype="multipart/form-data" role="search">
+                <div class="form-group">
+                    <a href="javascript:;" class="btn btn-default chooseFile">选择文件
+                        <input type="file" name="inputFile"  class="form-control" placeholder="chooseFile" id="inputFile" style="width:195px;display:inline-block;"/></a>
+
+                    <button  id="submit_btn" type="submit" class="btn btn-primary mgl-30" onclick="mySubmit();">Upload</button>
+                </div>
+
+                <ul class="list-group choosedFiles" id="choosedFiles">
+                </ul>
+            </form>
+            <a  id="look"  role="button"></a>
+
+        </div>
+    </div>-->
+
+    <script>
+        document.domain= "local.com";
+        function fileUpload(form, btn_id) {
+
+            var iframe = document.createElement("iframe");
+            iframe.setAttribute("id", "upload_iframe");
+            iframe.setAttribute("name", "upload_iframe");
+            iframe.setAttribute("width", "0");
+            iframe.setAttribute("height", "0");
+            iframe.setAttribute("border", "0");
+            iframe.setAttribute("style", "width: 0; height: 0; border: none;");
+
+            form.parentNode.appendChild(iframe);
+            window.frames['upload_iframe'].name = "upload_iframe";
+
+            iframeId = document.getElementById("upload_iframe");
+            form.target = 'upload_iframe';
+
+            var eventHandler = function () {
+                    if (iframeId.detachEvent) iframeId.detachEvent("onload", eventHandler);
+                    else iframeId.removeEventListener("load", eventHandler, false);
+
+                    // Message from server...
+                    if (iframeId.contentDocument) {
+                        content = iframeId.contentDocument.body.innerHTML;
+                    } else if (iframeId.contentWindow) {
+                        content = iframeId.contentWindow.document.body.innerHTML;
+                    } else if (iframeId.document) {
+                        content = iframeId.document.body.innerHTML;
+                    }
+
+                    //上传的文件地址
+                    var res = JSON.parse(content);
+
+                    var look = document.getElementById('look');
+
+                    if(res.data[0].filePath){
+                        look.setAttribute('class','btn btn-default');
+                        look.setAttribute('href',res.data[0].filePath);
+                        look.setAttribute('target','_blank');
+                        look.innerHTML = '查看上传的文件';
+                    }
+
+                    document.getElementById(btn_id).innerHTML = "Upload";
+                    setTimeout('iframeId.parentNode.removeChild(iframeId)', 250);
+                }
+
+            if (iframeId.addEventListener) iframeId.addEventListener("load", eventHandler, true);
+            if (iframeId.attachEvent) iframeId.attachEvent("onload", eventHandler);
+
+            form.submit();
+
+            document.getElementById(btn_id).innerHTML = "Uploading...";
+        }
+
+        var filesArr = [];
+        var upload = document.getElementById('inputFile');
+        upload.addEventListener('change',function(){
+            filesArr = [];
+            var lis = '<li class="list-group-item list-group-item-success">已选择的文件:</li>';
+            for(var i = 0 ; i < this.files.length ; i++){
+                var f =  this.files[i];
+                filesArr.push(f);
+                lis += '<li class="list-group-item">'+f.name+'</li>';
+            }
+
+            var choosedFiles = document.getElementById('choosedFiles');
+            choosedFiles.innerHTML = lis;
+        });
+
+        var my_form = document.getElementById('my_form');
+        var mySubmit = function(){
+            fileUpload(my_form,'submit_btn');
+        }
+    </script>
+
+</body>
+</html>
