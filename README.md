@@ -32,7 +32,7 @@ node版web上传 、 java版web上传
 
 ### 跨域资源共享（用于测试上传跨域的简单请求及预检测请求）
 
-此部分内容为<a href="" target="_blank">你所不知道的跨域资源共享(CORS)</a>
+此部分内容为<a href="http://www.devsai.com/2016/12/15/little-know-cors/" target="_blank">你所不知道的跨域资源共享(CORS)</a>的DEMO
 
 以node版为例，
 在node版服务端中添加了跨域资源共享的支持，并添加了**corsUpload**路由接口
