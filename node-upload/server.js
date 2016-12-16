@@ -14,6 +14,7 @@ const body = require('koa-better-body');
 const fs = require('fs');
 const stringify = require('json-stable-stringify');
 const contentType = require('content-type-mime');
+const cors = require('koa-cors');
 
 var router = require('koa-router')();
 var app = koa();
@@ -120,6 +121,19 @@ router.post('/ajaxUpload',body({files : 'inputFile'}),function *(){
 });
 
 /**
+ * cors-ajax上传文件
+ * @Author   xiangsai.huang
+ * @DateTime 2016-11-12T19:43:12+0800
+ */
+router.post('/corsUpload',body({files : 'inputFile'}),function *(){
+	var f = this.request.inputFile[0];
+	var result = saveFile(f.name,f.path);
+	console.log(result);
+	this.body = stringify(result);
+	this.set('Access-Control-Allow-Origin','*');
+});
+
+/**
  * 分片上传文件
  * @Author   xiangsai.huang
  * @DateTime 2016-11-12T19:43:12+0800
@@ -180,6 +194,7 @@ router.get('/file/:id/:name',function *(){
 
 
 app
+  .use(cors())
   .use(_static)
   .use(serve(path.join(__dirname,'uploadFile')))
   .use(router.routes())

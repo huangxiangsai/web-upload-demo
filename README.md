@@ -29,3 +29,19 @@ node版web上传 、 java版web上传
 * 打开浏览器访问静态文件127.0.0.1:8888/static/index.html 
 * 执行com.devsai.ws.EventServer.java的main方法启动websocket服务
 
+
+### 跨域资源共享（用于测试上传跨域的简单请求及预检测请求）
+
+此部分内容为<a href="" target="_blank">你所不知道的跨域资源共享(CORS)</a>
+
+以node版为例，
+在node版服务端中添加了跨域资源共享的支持，并添加了**corsUpload**路由接口
+
+通过访问`http://127.0.0.1:8083/index.html` >> 跨域上传 进入页面
+
+html页面路径为**/static/uploadMethod/corsUpload.html**
+
+打开控制台，上传文件，观察上传的请求情况， 
+
+也可修改html页面中JS，根据博文中所说的，进行修改，再次上传，观察上传请求情况。
+
